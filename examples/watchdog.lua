@@ -9,7 +9,7 @@ local agent = {}
 function SOCKET.open(fd, addr)
 	skynet.error("New client from : " .. addr)
 	agent[fd] = skynet.newservice("agent")
-	skynet.call(agent[fd], "lua", "start", { gate = gate, client = fd, watchdog = skynet.self() })
+	skynet.call(agent[fd], "lua", "start", { gate = gate, client = fd, addr = addr, watchdog = skynet.self() })
 end
 
 local function close_agent(fd)
@@ -46,6 +46,12 @@ end
 
 function CMD.close(fd)
 	close_agent(fd)
+end
+
+function CMD.sendmsg(name, msg)
+	for k,v in pairs(agent) do
+		skynet.call(v, "lua", "pushmsg", name, msg)
+	end
 end
 
 skynet.start(function()

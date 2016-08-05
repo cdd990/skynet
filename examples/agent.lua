@@ -11,24 +11,34 @@ local send_request
 local CMD = {}
 local REQUEST = {}
 local client_fd
+local addr
+local name
 
 function REQUEST:get()
-	print("get", self.what)
+	print(name, "get", self.what)
 	local r = skynet.call("SIMPLEDB", "lua", "get", self.what)
 	return { result = r }
 end
 
 function REQUEST:set()
-	print("set", self.what, self.value)
+	print(name, " set", self.what, self.value)
 	local r = skynet.call("SIMPLEDB", "lua", "set", self.what, self.value)
 end
 
 function REQUEST:handshake()
+	name = self.name
+	print("name:", name)
 	return { msg = "Welcome to skynet, I will send heartbeat every 5 sec." }
 end
 
 function REQUEST:quit()
 	skynet.call(WATCHDOG, "lua", "close", client_fd)
+end
+
+function REQUEST:sendmsg()
+	print(name .. ": " .. self.msg)
+	skynet.call(WATCHDOG, "lua", "sendmsg", name, self.msg)
+	return {}
 end
 
 local function request(name, args, response)
@@ -71,9 +81,10 @@ function CMD.start(conf)
 	local fd = conf.client
 	local gate = conf.gate
 	WATCHDOG = conf.watchdog
+	addr = conf.addr
 	-- slot 1,2 set at main.lua
 	host = sprotoloader.load(1):host "package"
-	send_request = host:attach(sprotoloader.load(2))
+	send_request = host:attach(sprotoloader.load(1))
 	skynet.fork(function()
 		while true do
 			send_package(send_request "heartbeat")
@@ -88,6 +99,10 @@ end
 function CMD.disconnect()
 	-- todo: do something before exit
 	skynet.exit()
+end
+
+function CMD.pushmsg(name, msg)
+	send_package(send_request("pushmsg", {name = name, msg = msg}))
 end
 
 skynet.start(function()
