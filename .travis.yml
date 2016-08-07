@@ -1,4 +1,6 @@
 language: c
 script:
 - make linux
+- ifconfig
+- ps -A
 - ./skynet examples/config
