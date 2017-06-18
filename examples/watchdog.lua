@@ -54,6 +54,12 @@ function CMD.sendmsg(name, msg)
 	end
 end
 
+function CMD.sendpos(name, x, y)
+	for k,v in pairs(agent) do
+		skynet.call(v, "lua", "pushpos", name, x, y)
+	end
+end
+
 skynet.start(function()
 	skynet.dispatch("lua", function(session, source, cmd, subcmd, ...)
 		if cmd == "socket" then

@@ -46,3 +46,19 @@ pushmsg 7 {
 	}
 	response {}
 }
+
+sendpos 8 {
+	request {
+		x 0 : integer
+		y 1 : integer
+	}
+	response {}
+}
+
+pushpos 9 {
+	request {
+		name 0 : string
+		x 1 : integer
+		y 2 : integer
+	}
+}

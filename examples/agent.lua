@@ -41,6 +41,11 @@ function REQUEST:sendmsg()
 	return {}
 end
 
+function REQUEST:sendpos()
+	skynet.call(WATCHDOG, "lua", "sendpos", name, self.x, self.y)
+	return {}
+end
+
 local function request(name, args, response)
 	local f = assert(REQUEST[name])
 	local r = f(args)
@@ -103,6 +108,10 @@ end
 
 function CMD.pushmsg(name, msg)
 	send_package(send_request("pushmsg", {name = name, msg = msg}))
+end
+
+function CMD.pushpos(name, x, y)
+	send_package(send_request("pushpos", {name = name, x = x, y = y}))
 end
 
 skynet.start(function()
